@@ -3,7 +3,9 @@
 Clojure compares every top-level list except `ns`, matching dry4clj. The other
 languages compare the functions and methods crapper scores: bodies, not
 signatures alone, and not callbacks nested inside another function. Rust
-functions inside `mod tests` are test code and are skipped.
+functions inside `mod tests` are test code and are skipped. C# compares the
+members crapper scores: methods, constructors, finalizers, operators, and
+accessors with a body; local functions and lambdas stay inside their member.
 """
 
 from __future__ import annotations
@@ -143,8 +145,32 @@ def _rust_nodes(data: bytes, root) -> list:
     return found
 
 
+_CSHARP_MEMBERS = {
+    "method_declaration",
+    "constructor_declaration",
+    "destructor_declaration",
+    "operator_declaration",
+    "conversion_operator_declaration",
+    "accessor_declaration",
+}
+
+
+def _csharp_nodes(data: bytes, root) -> list:
+    found = []
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node.type in _CSHARP_MEMBERS:
+            if _has(node, "block", "arrow_expression_clause"):
+                found.append(node)
+            continue
+        stack.extend(reversed(node.children))
+    return found
+
+
 _PICKERS = {
     "java": ("java", _java_nodes),
+    "csharp": ("csharp", _csharp_nodes),
     "go": ("go", _go_nodes),
     "python": ("python", _python_nodes),
     "typescript": (_grammar, _typescript_nodes),

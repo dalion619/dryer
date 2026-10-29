@@ -14,6 +14,7 @@ EXTENSIONS = {
     ".cljd": "clojure",
     ".bb": "clojure",
     ".java": "java",
+    ".cs": "csharp",
     ".go": "go",
     ".ts": "typescript",
     ".tsx": "typescript",
@@ -41,15 +42,20 @@ SKIP_DIRS = {
     "testdata",
     "__pycache__",
     ".clj-kondo",
+    "bin",
+    "obj",
+    "TestResults",
 }
 
 TEST_DIRS = {"test", "tests", "spec", "specs", "__tests__"}
+CSHARP_GENERATED_SUFFIXES = (".g.cs", ".g.i.cs", ".Designer.cs", ".AssemblyInfo.cs")
+CSHARP_TEST_PROJECT_SUFFIXES = (".Tests", ".Test", ".UnitTests", ".IntegrationTests", ".Specs")
 
 
 def language_of(path: str | Path) -> str | None:
     file_path = Path(path)
     name = file_path.name
-    if name.endswith(".d.ts"):
+    if name.endswith(".d.ts") or name.endswith(CSHARP_GENERATED_SUFFIXES):
         return None
     return EXTENSIONS.get(file_path.suffix)
 
@@ -77,6 +83,10 @@ def is_test_file(path: str | Path) -> bool:
     if name == "conftest.py":
         return True
     if name.endswith("_test.py") or (name.startswith("test_") and name.endswith(".py")):
+        return True
+    if file_path.suffix == ".cs" and any(
+        part.endswith(CSHARP_TEST_PROJECT_SUFFIXES) for part in file_path.parent.parts
+    ):
         return True
     return any(part in TEST_DIRS for part in file_path.parts)
 

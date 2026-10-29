@@ -1,6 +1,6 @@
 # dryer
 
-dryer finds candidate duplicate code in Clojure, Java, Go, TypeScript, Rust, and Python. One run detects the language of each source file, normalizes that language's forms, and reports pairs whose structure is close enough to review.
+dryer finds candidate duplicate code in Clojure, Java, C#, Go, TypeScript, Rust, and Python. One run detects the language of each source file, normalizes that language's forms, and reports pairs whose structure is close enough to review.
 
 Clojure follows [dry4clj](https://github.com/unclebob/dry4clj). The other languages use the same idea on the functions and methods [crapper](https://github.com/unclebob/crapper) and [mutator](https://github.com/unclebob/mutator) already treat as one unit. A form is only compared with forms written in the same language.
 
@@ -47,7 +47,7 @@ What stays is the call or method name, the operator, and the shape of the tree. 
 ./dryer
 ```
 
-The first run creates `.venv` and installs the tool. From a project root it walks the tree, skips `test`, `spec`, `vendor`, `node_modules`, and `target`, and writes two results:
+The first run creates `.venv` and installs the tool. From a project root it walks the tree, skips `test`, `spec`, `vendor`, `node_modules`, `target`, `bin`, and `obj`, and writes two results:
 
 - a report on stdout, closest match first
 - `.metrics/dry.edn`, replaced on every successful analysis
@@ -97,6 +97,7 @@ DUPLICATE score=0.89
 | --- | --- | --- |
 | Clojure | every top-level form except `ns` | reader-conditional branches other than `:clj` |
 | Java | methods with a body | constructors, abstract methods, methods inside anonymous or local classes |
+| C# | methods, constructors, finalizers, operators, and accessors with a body | lambdas and local functions stay inside their member; generated `*.g.cs` / `*.Designer.cs` files and `*.Tests`-style projects |
 | Go | functions and methods with a body | function literals stay inside the enclosing function |
 | TypeScript | functions, methods, and top-level arrow functions | callbacks nested inside another function |
 | Rust | functions and methods with a body | functions inside `mod tests`, and closures |
